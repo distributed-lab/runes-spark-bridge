@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package btc_signer;
+
+// we ask info from btcsigner
+service BtcSigner {
+  rpc Sign(SignRequest) returns (SignResponse);
+  rpc GetPublicKey(PublicKeyRequest) returns (PublicKeyResponse);
+  rpc CreateMultiSig(MultiSigRequest) returns (MultiSigResponse);
+  rpc PartialSign(PartialSignRequest) returns (PartialSignResponse);
+  rpc AggregateSignatures(AggregateRequest) returns (AggregateResponse);
+}
+
+// for single signature
+message SignRequest {
+  bytes message = 1;
+  string signer_id = 2;
+}
+
+message SignResponse {
+  oneof result {
+    Signature signature = 1;
+    string error = 2;
+  }
+}
+
+message Signature {
+  bytes data = 1;
+  string algorithm = 2;
+}
+
+// for public key
+message PublicKeyRequest {
+  string signer_id = 1;
+}
+
+message PublicKeyResponse {
+  oneof result {
+    PublicKey public_key = 1;
+    string error = 2;
+  }
+}
+
+message PublicKey {
+  bytes data = 1;
+  string format = 2;
+}
+
+// for multi signature
+message MultiSigRequest {
+  repeated string signer_ids = 1;
+  uint32 threshold = 2;
+  bytes message = 3;
+}
+
+message MultiSigResponse {
+  oneof result {
+    string session_id = 1;
+    string error = 2;
+  }
+}
+
+// for partial signature
+message PartialSignRequest {
+  string session_id = 1;
+  string signer_id = 2;
+  bytes message = 3;
+}
+
+message PartialSignResponse {
+  oneof result {
+    PartialSignature partial_signature = 1;
+    string error = 2;
+  }
+}
+
+message PartialSignature {
+  bytes data = 1;
+  string signer_id = 2;
+}
+
+// aggregation
+message AggregateRequest {
+  string session_id = 1;
+  repeated PartialSignature partial_signatures = 2;
+}
+
+message AggregateResponse {
+  oneof result {
+    Signature final_signature = 1;
+    string error = 2;
+  }
+}
