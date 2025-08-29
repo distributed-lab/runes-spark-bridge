@@ -7,7 +7,7 @@ members = [
 
     # spark-balance-checker
     "spark_balance_checker/crates/*",
-    "spark_balance_checker/apps/*",
+    "spark_balance_checker/apps/*", "verifier",
 ]
 
 [workspace.package]
