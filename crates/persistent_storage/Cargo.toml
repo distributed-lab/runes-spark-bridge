@@ -9,7 +9,7 @@ readme.workspace = true
 [dependencies]
 async-trait = { workspace = true }
 bitcoin = { workspace = true }
-config_parser = { workspace = true }
+indexer_config_parser = { workspace = true }
 global_utils = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -1,5 +1,5 @@
 [package]
-name = "local_db_store_indexer"
+name = "indexer_local_db_store"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

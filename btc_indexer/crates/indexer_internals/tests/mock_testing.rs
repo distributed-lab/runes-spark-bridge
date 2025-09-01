@@ -10,12 +10,12 @@ use btc_indexer_internals::{
     api::BtcIndexerApi,
     indexer::{BtcIndexer, IndexerParams, IndexerParamsWithApi},
 };
-use config_parser::config::{BtcRpcCredentials, ConfigVariant, ServerConfig};
 use global_utils::{
     common_types::get_uuid,
     logger::{LoggerGuard, init_logger},
 };
-use local_db_store_indexer::PostgresDbCredentials;
+use indexer_config_parser::config::{BtcRpcCredentials, ConfigVariant, ServerConfig};
+use indexer_local_db_store::PostgresDbCredentials;
 use titan_client::TitanApi;
 use titan_types::{AddressData, AddressTxOut, SpentStatus, Transaction, TransactionStatus};
 use tracing::debug;
@@ -26,7 +26,7 @@ use crate::utils::{
 };
 
 mod mock_testing {
-    use local_db_store_indexer::init::LocalDbIndexer;
+    use indexer_local_db_store::init::LocalDbIndexer;
 
     use super::*;
 

@@ -1,4 +1,4 @@
-use config_parser::error::ConfigParserError;
+use indexer_config_parser::error::ConfigParserError;
 use sqlx::migrate::MigrateError;
 
 #[derive(Debug, thiserror::Error)]

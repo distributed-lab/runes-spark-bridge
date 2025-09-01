@@ -1,0 +1,23 @@
+[package]
+name = "verifier_main"
+edition = "2024"
+version.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+readme.workspace = true
+
+[features]
+default = []
+swagger = []
+
+[dependencies]
+anyhow = { workspace = true }
+axum = { workspace = true }
+btc_indexer_internals = { workspace = true }
+btc_indexer_server = { workspace = true }
+indexer_config_parser = { workspace = true }
+dotenv = { workspace = true }
+global_utils = { workspace = true }
+indexer_local_db_store = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

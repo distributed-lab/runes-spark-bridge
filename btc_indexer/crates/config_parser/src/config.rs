@@ -33,13 +33,15 @@ pub const BITCOIN_RPC_PASSWORD: &str = "BITCOIN_RPC_PASSWORD";
 ///
 /// Example of using local configuration:
 /// ```rust
-/// use config_parser::config::{ConfigVariant, DEFAULT_APP_LOCAL_CONFIG_NAME, ServerConfig};
+/// use indexer_config_parser::config::{
+///     ConfigVariant, DEFAULT_APP_LOCAL_CONFIG_NAME, ServerConfig,
+/// };
 /// let config = ServerConfig::init_config(ConfigVariant::Local);
 /// assert!(config.is_ok())
 /// ```
 // Example of using production configuration:
 // ```
-// use config_parser::config::{ConfigVariant, DEFAULT_APP_PRODUCTION_CONFIG_NAME, ServerConfig};
+// use indexer_config_parser::config::{ConfigVariant, DEFAULT_APP_PRODUCTION_CONFIG_NAME, ServerConfig};
 // let config = ServerConfig::init_config(ConfigVariant::Production);
 // assert!(config.is_ok())
 // ```

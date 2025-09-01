@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::extract::{Json, State};
 use btc_indexer_internals::{api::BtcIndexerApi, indexer::BtcIndexer};
 use global_utils::common_types::{TxIdWrapped, UrlWrapped, get_uuid};
-use local_db_store_indexer::{
+use indexer_local_db_store::{
     PersistentRepoTrait,
     error::DbError,
     schemas::runes_spark::btc_indexer_work_checkpoint::{BtcIndexerWorkCheckpoint, StatusBtcIndexer, Task, Update},

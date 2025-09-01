@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use axum::{Router, routing::post};
 use btc_indexer_internals::indexer::BtcIndexer;
-use local_db_store_indexer::init::LocalDbIndexer;
+use indexer_local_db_store::init::LocalDbIndexer;
 use titan_client::TitanClient;
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;

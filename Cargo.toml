@@ -7,7 +7,10 @@ members = [
 
     # spark-balance-checker
     "spark_balance_checker/crates/*",
-    "spark_balance_checker/apps/*", "verifier",
+    "spark_balance_checker/apps/*",
+
+    "verifier/crates/*",
+    "verifier/apps/*",
 ]
 
 [workspace.package]
@@ -30,7 +33,8 @@ btc_indexer = { path = "./btc_indexer/crates/btc_indexer" }
 btc_indexer_internals = { path = "./btc_indexer/crates/indexer_internals" }
 btc_indexer_server = { path = "./btc_indexer/crates/server", features = ["swagger"] }
 config = { version = "0.15.13" }
-config_parser = { path = "./btc_indexer/crates/config_parser" }
+indexer_config_parser = { path = "./btc_indexer/crates/config_parser" }
+verifier_config_parser = { path = "./verifier/crates/config_parser" }
 dns-lookup = { version = "3.0.0" }
 dotenv = { version = "0.15.0" }
 env_logger = "0.11.8"
@@ -38,7 +42,8 @@ global_utils = { path = "./crates/global_utils" }
 hex = "0.4.3"
 http = "1.3.1"
 log = "0.4.27"
-local_db_store_indexer = { path = "./btc_indexer/crates/local_db_store" }
+indexer_local_db_store = { path = "./btc_indexer/crates/local_db_store" }
+verifier_local_db_store = { path = "./verifier/crates/local_db_store" }
 mockall = { version = "0.13.1" }
 ordinals = { version = "0.0.15" }
 persistent_storage = { path = "./crates/persistent_storage" }

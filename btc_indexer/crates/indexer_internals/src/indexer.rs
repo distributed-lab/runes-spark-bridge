@@ -2,9 +2,9 @@ use std::{sync::Arc, time::Duration};
 
 use async_trait::async_trait;
 use bitcoincore_rpc::{Client, RawTx, RpcApi, bitcoin, json};
-use config_parser::config::{BtcIndexerParams, BtcRpcCredentials};
 use global_utils::common_types::{TxIdWrapped, UrlWrapped, get_uuid};
-use local_db_store_indexer::{
+use indexer_config_parser::config::{BtcIndexerParams, BtcRpcCredentials};
+use indexer_local_db_store::{
     PersistentRepoTrait,
     init::LocalDbIndexer,
     schemas::runes_spark::btc_indexer_work_checkpoint::{BtcIndexerWorkCheckpoint, StatusBtcIndexer, Update},

@@ -15,9 +15,9 @@ anyhow = { workspace = true }
 axum = { workspace = true }
 btc_indexer_internals = { workspace = true }
 btc_indexer_server = { workspace = true }
-config_parser = { workspace = true }
+indexer_config_parser = { workspace = true }
 dotenv = { workspace = true }
 global_utils = { workspace = true }
-local_db_store_indexer = { workspace = true }
+indexer_local_db_store = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

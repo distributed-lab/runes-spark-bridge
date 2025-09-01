@@ -1,4 +1,4 @@
-use local_db_store_indexer::error::{DbError, DbGetConnError};
+use indexer_local_db_store::error::{DbError, DbGetConnError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum BtcIndexerError {

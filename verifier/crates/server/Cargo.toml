@@ -1,0 +1,43 @@
+[package]
+name = "verifier_server"
+edition = "2024"
+version.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+readme.workspace = true
+
+[features]
+default = []
+swagger = []
+
+[dependencies]
+axum = { workspace = true }
+bitcoin = { workspace = true }
+btc_indexer_internals = { workspace = true }
+indexer_config_parser = { workspace = true }
+global_utils = { workspace = true }
+indexer_local_db_store = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+titan-client = { workspace = true }
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true, features = ["axum"] }
+uuid = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+axum-test = { workspace = true }
+bitcoincore-rpc = { workspace = true }
+dotenv = { workspace = true }
+global_utils = { workspace = true }
+mockall = { workspace = true }
+titan-types = { workspace = true }

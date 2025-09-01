@@ -1,5 +1,5 @@
 [package]
-name = "config_parser"
+name = "indexer_config_parser"
 version = "0.1.0"
 edition = "2024"
 
