@@ -1,7 +1,6 @@
 use global_utils::env_parser::{EnvParser, EnvParserError};
 use serde::{Deserialize, Serialize};
 
-pub const POSTGRES_TESTING_URL_ENV_NAME: &str = "DATABASE_URL_TESTING";
 pub const POSTGRES_URL_ENV_NAME: &str = "DATABASE_URL";
 pub const POSTGRES_USER_ENV_NAME: &str = "POSTGRES_USER";
 pub const POSTGRES_PASSWORD_ENV_NAME: &str = "POSTGRES_PASSWORD";
@@ -45,7 +44,7 @@ impl EnvParser for PgName {
 }
 
 impl PostgresDbCredentials {
-    /// Gets url from DB_URL env variable
+    /// Gets url from `DATABASE_URL` env variable
     pub fn from_db_url() -> Result<Self, EnvParserError> {
         Ok(Self {
             url: PostgresDbCredentials::obtain_env_value()?,

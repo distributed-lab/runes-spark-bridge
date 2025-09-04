@@ -7,7 +7,7 @@ use local_db_store_indexer::{
     PersistentRepoTrait,
     schemas::runes_spark::btc_indexer_work_checkpoint::{BtcIndexerWorkCheckpoint, StatusBtcIndexer, Task, Update},
 };
-use persistent_storage::error::DatabaseError;
+use persistent_storage::error::DbError;
 use serde::{Deserialize, Serialize};
 use sqlx::types::{Json as SqlxJson, chrono::Utc};
 use titan_client::Transaction;
@@ -78,7 +78,7 @@ pub(crate) async fn spawn_tx_tracking_task<T: titan_client::TitanApi, Db: Persis
     app_state: AppState<T, Db>,
     payload: TrackTxRequest,
     uuid: Uuid,
-) -> Result<CancellationToken, DatabaseError> {
+) -> Result<CancellationToken, DbError> {
     let cancellation_token = CancellationToken::new();
     tokio::task::spawn({
         let local_cancellation_token = cancellation_token.child_token();

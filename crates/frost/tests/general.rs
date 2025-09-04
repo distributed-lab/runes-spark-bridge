@@ -1,8 +1,8 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use frost::traits::{DkgRound1Request, SignRound1Request, SignRound2Request};
 use frost::{aggregator::FrostAggregator, config::*, mocks::*, signer::FrostSigner, traits::SignerClient};
 use frost_secp256k1_tr::{Identifier, keys::Tweak};
-use frost::traits::{DkgRound1Request, SignRound1Request, SignRound2Request};
 
 fn create_signer(identifier: u16) -> FrostSigner {
     FrostSigner::new(
@@ -28,7 +28,7 @@ fn helper_1() -> BTreeMap<Identifier, Arc<dyn SignerClient>> {
     let identifier_1: Identifier = 1.try_into().unwrap();
     let identifier_2: Identifier = 2.try_into().unwrap();
     let identifier_3: Identifier = 3.try_into().unwrap();
-    
+
     BTreeMap::from([
         (identifier_1, Arc::new(mock_signer_client1) as Arc<dyn SignerClient>),
         (identifier_2, Arc::new(mock_signer_client2) as Arc<dyn SignerClient>),
@@ -70,7 +70,6 @@ async fn test_aggregator_signer_integration() {
         .verify(message, &signature)
         .unwrap();
 }
-
 
 fn create_signer_with_stores(identifier: u16) -> FrostSigner {
     FrostSigner::new(
@@ -121,12 +120,13 @@ async fn test_parallel_signing_sessions_via_aggregator() {
         .verify(msg_b.as_slice(), &signature_b)
         .expect("signature B must be valid");
 
-    assert_ne!(signature_a, signature_b, "signatures for different messages should differ");
+    assert_ne!(
+        signature_a, signature_b,
+        "signatures for different messages should differ"
+    );
 }
 
-fn create_signer_with_stores_2(
-    identifier: u16,
-) -> (FrostSigner, Arc<MockSignerSessionStorage>) {
+fn create_signer_with_stores_2(identifier: u16) -> (FrostSigner, Arc<MockSignerSessionStorage>) {
     let user_storage = Arc::new(MockSignerUserStorage::new());
     let session_storage = Arc::new(MockSignerSessionStorage::new());
 
@@ -209,7 +209,6 @@ async fn test_session_storage_in_signing_flow() {
         tweak: None,
     };
     let sign1_response = signer1.clone().sign_round_1(sign1_request).await.unwrap();
-
     let sign2_request = SignRound1Request {
         user_id: user_id.clone(),
         session_id: "test_session".to_string(),

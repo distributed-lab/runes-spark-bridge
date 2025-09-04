@@ -1,3 +1,4 @@
+use persistent_storage::error::DbError;
 use persistent_storage::init::PersistentDbConn;
 use serde::{Deserialize, Serialize};
 use sqlx::{
@@ -6,7 +7,6 @@ use sqlx::{
     query::{Query, QueryAs},
     types::chrono::{DateTime, Utc},
 };
-use persistent_storage::error::DatabaseError;
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -173,7 +173,7 @@ impl<'a> Update {
 
 impl UserRequestStats {
     #[instrument(skip(conn), level = "trace")]
-    pub async fn insert(self, conn: &mut PersistentDbConn) -> Result<(), DatabaseError> {
+    pub async fn insert(self, conn: &mut PersistentDbConn) -> Result<(), DbError> {
         let mut transaction = conn.begin().await?;
         sqlx::query(&format!(
             "INSERT INTO {DB_NAME} (uuid, status, error, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)"
@@ -190,7 +190,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn update(conn: &mut PersistentDbConn, uuid: &Uuid, update: &Update) -> Result<u64, DatabaseError> {
+    pub async fn update(conn: &mut PersistentDbConn, uuid: &Uuid, update: &Update) -> Result<u64, DbError> {
         let sets = update.get_params_sets();
         if sets.is_empty() {
             return Ok(0);
@@ -211,7 +211,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn remove(conn: &mut PersistentDbConn, filter: Option<&Filter>) -> Result<u64, DatabaseError> {
+    pub async fn remove(conn: &mut PersistentDbConn, filter: Option<&Filter>) -> Result<u64, DbError> {
         match filter {
             None => Self::remove_all(conn).await,
             Some(f) => Self::remove_with_filter(conn, f).await,
@@ -219,7 +219,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn remove_all(conn: &mut PersistentDbConn) -> Result<u64, DatabaseError> {
+    pub async fn remove_all(conn: &mut PersistentDbConn) -> Result<u64, DbError> {
         let mut transaction = conn.begin().await?;
         let result = sqlx::query(&format!("DELETE FROM {DB_NAME}"))
             .execute(&mut *transaction)
@@ -229,7 +229,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn remove_with_filter(conn: &mut PersistentDbConn, filter: &Filter) -> Result<u64, DatabaseError> {
+    pub async fn remove_with_filter(conn: &mut PersistentDbConn, filter: &Filter) -> Result<u64, DbError> {
         let conditions = filter.get_params_sets();
         if conditions.is_empty() {
             return Self::remove_all(conn).await;
@@ -248,7 +248,7 @@ impl UserRequestStats {
     pub async fn filter(
         conn: &mut PersistentDbConn,
         filter: Option<&Filter>,
-    ) -> Result<Vec<UserRequestStats>, DatabaseError> {
+    ) -> Result<Vec<UserRequestStats>, DbError> {
         match filter {
             None => Self::get_all(conn).await,
             Some(f) => Self::get_with_filter(conn, f).await,
@@ -256,7 +256,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn get_all(conn: &mut PersistentDbConn) -> Result<Vec<UserRequestStats>, DatabaseError> {
+    pub async fn get_all(conn: &mut PersistentDbConn) -> Result<Vec<UserRequestStats>, DbError> {
         let mut transaction = conn.begin().await?;
         let results = sqlx::query_as::<_, UserRequestStats>(&format!(
             "SELECT uuid, status, error, created_at, updated_at FROM {DB_NAME}"
@@ -271,7 +271,7 @@ impl UserRequestStats {
     pub async fn get_with_filter(
         conn: &mut PersistentDbConn,
         filter: &Filter,
-    ) -> Result<Vec<UserRequestStats>, DatabaseError> {
+    ) -> Result<Vec<UserRequestStats>, DbError> {
         let conditions = filter.get_params_sets();
         if conditions.is_empty() {
             return Self::get_all(conn).await;
@@ -291,7 +291,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn count(conn: &mut PersistentDbConn, filter: Option<&Filter>) -> Result<u64, DatabaseError> {
+    pub async fn count(conn: &mut PersistentDbConn, filter: Option<&Filter>) -> Result<u64, DbError> {
         match filter {
             None => Self::count_all(conn).await,
             Some(f) => Self::count_with_filter(conn, f).await,
@@ -299,7 +299,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn count_all(conn: &mut PersistentDbConn) -> Result<u64, DatabaseError> {
+    pub async fn count_all(conn: &mut PersistentDbConn) -> Result<u64, DbError> {
         let mut transaction = conn.begin().await?;
         let sql = format!("SELECT COUNT(*) FROM {DB_NAME}");
         let row = sqlx::query(&sql).fetch_one(&mut *transaction).await?;
@@ -309,7 +309,7 @@ impl UserRequestStats {
     }
 
     #[instrument(skip(conn), level = "trace")]
-    pub async fn count_with_filter(conn: &mut PersistentDbConn, filter: &Filter) -> Result<u64, DatabaseError> {
+    pub async fn count_with_filter(conn: &mut PersistentDbConn, filter: &Filter) -> Result<u64, DbError> {
         let conditions = filter.get_params_sets();
         if conditions.is_empty() {
             return Self::count_all(conn).await;

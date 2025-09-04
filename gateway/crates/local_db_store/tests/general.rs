@@ -1,6 +1,6 @@
 use gateway_local_db_store::{
-    schemas::user_state::{Key, KeyStorage},
     schemas::request::{Request, RequestStorage},
+    schemas::user_state::{Key, KeyStorage},
 };
 use global_utils::common_types::get_uuid;
 use persistent_storage::config::PostgresDbCredentials;

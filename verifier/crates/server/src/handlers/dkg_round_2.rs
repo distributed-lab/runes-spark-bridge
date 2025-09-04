@@ -12,6 +12,6 @@ pub async fn handle(
 ) -> Result<Json<DkgRound2Response>, VerifierError> {
     let response = state.frost_signer.dkg_round_2(request).await?;
     tracing::debug!("DKG round2 response: {:?}", response);
-    
+
     Ok(Json(response))
 }

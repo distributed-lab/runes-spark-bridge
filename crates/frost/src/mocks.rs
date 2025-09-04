@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use async_trait::async_trait;
-use persistent_storage::error::DatabaseError;
+use persistent_storage::error::DbError;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -37,7 +37,7 @@ impl SignerSessionStorage for MockSignerSessionStorage {
         &self,
         user_id: String,
         session_id: String,
-    ) -> Result<Option<SignerSessionState>, SignerError> {
+    ) -> Result<Option<SignerSessionState>, DbError> {
         Ok(self
             .session_state
             .lock()
@@ -51,7 +51,7 @@ impl SignerSessionStorage for MockSignerSessionStorage {
         user_id: String,
         session_id: String,
         state: SignerSessionState,
-    ) -> Result<(), SignerError> {
+    ) -> Result<(), DbError> {
         self.session_state
             .lock()
             .await
@@ -70,11 +70,11 @@ impl MockSignerUserStorage {
 
 #[async_trait]
 impl SignerUserStorage for MockSignerUserStorage {
-    async fn get_user_state(&self, user_id: String) -> Result<Option<SignerUserState>, DatabaseError> {
+    async fn get_user_state(&self, user_id: String) -> Result<Option<SignerUserState>, DbError> {
         Ok(self.user_states.lock().await.get(&user_id).map(|state| state.clone()))
     }
 
-    async fn set_user_state(&self, user_id: String, state: SignerUserState) -> Result<(), DatabaseError> {
+    async fn set_user_state(&self, user_id: String, state: SignerUserState) -> Result<(), DbError> {
         self.user_states.lock().await.insert(user_id, state);
         Ok(())
     }
@@ -94,11 +94,11 @@ impl MockAggregatorUserStorage {
 
 #[async_trait]
 impl AggregatorUserStorage for MockAggregatorUserStorage {
-    async fn get_user_state(&self, user_id: String) -> Result<Option<AggregatorUserState>, DatabaseError> {
+    async fn get_user_state(&self, user_id: String) -> Result<Option<AggregatorUserState>, DbError> {
         Ok(self.user_states.lock().await.get(&user_id).map(|state| state.clone()))
     }
 
-    async fn set_user_state(&self, user_id: String, state: AggregatorUserState) -> Result<(), DatabaseError> {
+    async fn set_user_state(&self, user_id: String, state: AggregatorUserState) -> Result<(), DbError> {
         self.user_states.lock().await.insert(user_id, state);
         Ok(())
     }

@@ -1,40 +1,43 @@
-use uuid::Uuid;
-use serde::{Deserialize, Serialize};
-use frost::traits::SignerUserStorage;
-use crate::Storage;
-use crate::DatabaseError;
-use frost::traits::SignerUserState;
-use persistent_storage::init::PostgresRepo;
+use crate::DbError;
+use crate::LocalDbStore;
+use frost::errors::SignerError;
+use frost::traits::{SignerSessionState, SignerSessionStorage, SignerUserState, SignerUserStorage};
+use persistent_storage::init::PersistentRepoTrait;
+use sqlx::Acquire;
+use sqlx::types::Json;
+use tracing::{debug, instrument};
 
 #[async_trait::async_trait]
-impl SignerUserStorage for Storage {
-    async fn get_user_state(&self, user_public_key: String) -> Result<Option<SignerUserState>, DatabaseError> {
-        let result: Option<(String,)> = sqlx::query_as("SELECT state_data FROM verifier.keys WHERE user_public_key = $1")
-            .bind(user_public_key)
-            .fetch_optional(&self.get_conn().await?)
-            .await
-            .map_err(|e| DatabaseError::BadRequest(e.to_string()))?;
-
-        let state: Option<SignerUserState> = if let Some((state_data, )) = result {
-            Some(serde_json::from_str(&state_data)
-                .map_err(|e| DatabaseError::BadRequest(format!("Failed to deserialize state: {}", e)))?)
+impl SignerUserStorage for LocalDbStore {
+    #[instrument(level = "debug", skip(self), ret)]
+    async fn get_user_state(&self, user_pubkey: String) -> Result<Option<SignerUserState>, DbError> {
+        let mut lock = self.0.acquire().await?;
+        let pg_conn = lock.acquire().await?;
+        debug!(user_pubkey =% user_pubkey, "Get user state");
+        let result: Option<(Json<SignerUserState>,)> =
+            sqlx::query_as("SELECT signing_state FROM verifier.user_state WHERE user_public_key = $1")
+                .bind(user_pubkey)
+                .fetch_optional(pg_conn)
+                .await
+                .map_err(|e| DbError::BadRequest(e.to_string()))?;
+        if let Some((user_state,)) = result {
+            Ok(Some(user_state.0))
         } else {
-            None
-        };
-
-        Ok(state)
+            Ok(None)
+        }
     }
 
-    async fn set_user_state(&self, user_public_key: String, user_state: SignerUserState) -> Result<(), DatabaseError> {
-        let state_data = serde_json::to_string(&user_state)
-            .map_err(|e| DatabaseError::BadRequest(format!("Failed to serialize state: {}", e)))?;
-        
-        let _ = sqlx::query("INSERT INTO verifier.keys (user_public_key, state_data) VALUES ($1, $2) ON CONFLICT (user_public_key) DO UPDATE SET state_data = $2")
+    #[instrument(level = "debug", skip(self), ret)]
+    async fn set_user_state(&self, user_public_key: String, user_state: SignerUserState) -> Result<(), DbError> {
+        let mut conn = self.0.acquire().await?;
+        let pg_conn = conn.acquire().await?;
+        debug!(user_pubkey =% user_public_key, user_state =? user_state, "Get user state");
+        let _ = sqlx::query("INSERT INTO verifier.user_state (user_public_key, signing_state) VALUES ($1, $2) ON CONFLICT (user_public_key) DO UPDATE SET signing_state = $2")
             .bind(user_public_key)
-            .bind(state_data)
-            .execute(&self.get_conn().await?)
+            .bind(Json(user_state))
+            .execute(pg_conn)
             .await
-            .map_err(|e| DatabaseError::BadRequest(e.to_string()))?;
+            .map_err(|e| DbError::BadRequest(e.to_string()))?;
 
         Ok(())
     }

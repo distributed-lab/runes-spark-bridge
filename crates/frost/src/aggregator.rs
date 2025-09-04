@@ -1,9 +1,10 @@
 use std::{collections::BTreeMap, sync::Arc};
 
+use crate::{config::AggregatorConfig, errors::AggregatorError, traits::*};
 use frost_secp256k1_tr::{Identifier, Signature, SigningPackage, keys, keys::Tweak};
 use futures::future::join_all;
+use tracing::{debug, instrument};
 use uuid::Uuid;
-use crate::{config::AggregatorConfig, errors::AggregatorError, traits::*};
 
 #[derive(Clone)]
 pub struct FrostAggregator {
@@ -25,9 +26,10 @@ impl FrostAggregator {
         }
     }
 
-    async fn dkg_round_1(&self, user_id: String) -> Result<(), AggregatorError> {
+    #[instrument(level = "debug", skip(self), ret)]
+    pub async fn dkg_round_1(&self, user_id: String) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
-
+        debug!("round1 current state: {:?}", state);
         match state {
             Some(_) => Err(AggregatorError::InvalidUserState("User state is not None".to_string())),
             None => {
@@ -69,8 +71,10 @@ impl FrostAggregator {
         }
     }
 
+    #[instrument(level = "debug", skip(self), ret)]
     async fn dkg_round_2(&self, user_id: String) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
+        debug!("round2 current state: {:?}", state);
 
         match state {
             Some(AggregatorUserState::DkgRound1 { round1_packages }) => {
@@ -116,8 +120,10 @@ impl FrostAggregator {
         }
     }
 
+    #[instrument(level = "debug", skip(self), ret)]
     async fn dkg_finalize(&self, user_id: String) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
+        debug!("finalize current state: {:?}", state);
 
         match state {
             Some(AggregatorUserState::DkgRound2 {
@@ -175,6 +181,7 @@ impl FrostAggregator {
         }
     }
 
+    #[instrument(level = "debug", skip(self), ret)]
     pub async fn run_dkg_flow(&self, user_id: String) -> Result<keys::PublicKeyPackage, AggregatorError> {
         self.dkg_round_1(user_id.clone()).await?;
         self.dkg_round_2(user_id.clone()).await?;
@@ -189,13 +196,15 @@ impl FrostAggregator {
         }
     }
 
-    async fn sign_round_1(&self,
-                          user_id: String,
-                          session_id: String,
-                          message: &[u8],
-                          tweak: Option<&[u8]>) -> Result<(), AggregatorError> {
+    #[instrument(level = "debug", skip(self), ret)]
+    async fn sign_round_1(
+        &self,
+        user_id: String,
+        session_id: String,
+        message: &[u8],
+        tweak: Option<&[u8]>,
+    ) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
-
         match state {
             Some(AggregatorUserState::DkgFinalized { public_key_package }) => {
                 let mut commitments = BTreeMap::new();
@@ -239,7 +248,8 @@ impl FrostAggregator {
         }
     }
 
-    async fn sign_round_2(&self, user_id: String, session_id: String,) -> Result<(), AggregatorError> {
+    #[instrument(level = "debug", skip(self), ret)]
+    async fn sign_round_2(&self, user_id: String, session_id: String) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         match state {
@@ -304,6 +314,7 @@ impl FrostAggregator {
         }
     }
 
+    #[instrument(level = "debug", skip(self), ret)]
     pub async fn run_signing_flow(
         &self,
         user_id: String,
@@ -312,7 +323,8 @@ impl FrostAggregator {
     ) -> Result<Signature, AggregatorError> {
         let session_id = Uuid::new_v4().to_string();
 
-        self.sign_round_1(user_id.clone(), session_id.clone(), message, tweak).await?;
+        self.sign_round_1(user_id.clone(), session_id.clone(), message, tweak)
+            .await?;
         self.sign_round_2(user_id.clone(), session_id.clone()).await?;
 
         let state = self.user_storage.get_user_state(user_id.clone()).await?;

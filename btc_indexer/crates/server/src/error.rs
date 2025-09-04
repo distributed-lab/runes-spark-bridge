@@ -1,5 +1,5 @@
 use btc_indexer_internals::error::BtcIndexerError;
-use persistent_storage::error::DatabaseError;
+use persistent_storage::error::DbError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -17,7 +17,7 @@ pub enum ServerError {
     #[error("Your task was cancelled, msg: {0}")]
     TaskCancelled(String),
     #[error("Database error, msg: {0}")]
-    DatabaseError(#[from] DatabaseError),
+    DatabaseError(#[from] DbError),
 }
 
 mod response_conversion {

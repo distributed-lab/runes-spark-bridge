@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
 
     let postgres_url = std::env::var("DATABASE_URL").unwrap();
     let postgres_creds = PostgresDbCredentials { url: postgres_url };
-    
+
     let db_pool = PostgresRepo::from_config(postgres_creds).await?.into_shared();
     let frost_signer = create_frost_signer(app_config.frost_signer);
     let app = verifier_server::init::create_app(frost_signer).await?;

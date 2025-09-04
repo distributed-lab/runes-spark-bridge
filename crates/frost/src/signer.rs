@@ -15,12 +15,16 @@ pub struct FrostSigner {
 }
 
 impl FrostSigner {
-    pub fn new(config: SignerConfig, user_storage: Arc<dyn SignerUserStorage>, session_storage: Arc<dyn SignerSessionStorage>) -> Self {
+    pub fn new(
+        config: SignerConfig,
+        user_storage: Arc<dyn SignerUserStorage>,
+        session_storage: Arc<dyn SignerSessionStorage>,
+    ) -> Self {
         Self {
             config: config.clone(),
             user_storage,
             identifier: config.identifier.try_into().unwrap(),
-            session_storage
+            session_storage,
         }
     }
 
@@ -51,11 +55,9 @@ impl FrostSigner {
                     round1_package: package,
                 })
             }
-            _ => {
-                return Err(SignerError::InvalidUserState(
-                    "User state is not SigningRound1".to_string(),
-                ));
-            }
+            _ => Err(SignerError::InvalidUserState(
+                "User state is not SigningRound1".to_string(),
+            )),
         }
     }
 
@@ -83,11 +85,9 @@ impl FrostSigner {
                     round2_packages: packages,
                 })
             }
-            _ => {
-                return Err(SignerError::InvalidUserState(
-                    "User state is not SigningRound1".to_string(),
-                ));
-            }
+            _ => Err(SignerError::InvalidUserState(
+                "User state is not SigningRound1".to_string(),
+            )),
         }
     }
 
@@ -112,11 +112,9 @@ impl FrostSigner {
                     .await?;
                 Ok(DkgFinalizeResponse { public_key_package })
             }
-            _ => {
-                return Err(SignerError::InvalidUserState(
-                    "User state is not SigningRound1".to_string(),
-                ));
-            }
+            _ => Err(SignerError::InvalidUserState(
+                "User state is not SigningRound1".to_string(),
+            )),
         }
     }
 
@@ -128,7 +126,7 @@ impl FrostSigner {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         match state {
-            Some(SignerUserState::DkgFinalized { key_package}) => {
+            Some(SignerUserState::DkgFinalized { key_package }) => {
                 let tweak_key_package = match tweak.clone() {
                     Some(tweak) => key_package.clone().tweak(Some(tweak.to_vec())),
                     None => key_package.clone(),
@@ -147,13 +145,15 @@ impl FrostSigner {
                         },
                     )
                     .await?;
-                Ok(SignRound1Response { user_id, session_id, commitments })
+                Ok(SignRound1Response {
+                    user_id,
+                    session_id,
+                    commitments,
+                })
             }
-            _ => {
-                Err(SignerError::InvalidUserState(
-                    "User state is not SigningRound1".to_string(),
-                ))
-            }
+            _ => Err(SignerError::InvalidUserState(
+                "User state is not SigningRound1".to_string(),
+            )),
         }
     }
 
@@ -162,7 +162,8 @@ impl FrostSigner {
         let session_id = request.session_id.clone();
         // let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
-        let session_state = self.session_storage
+        let session_state = self
+            .session_storage
             .get_session_state(user_id.clone(), session_id.clone())
             .await?;
 
@@ -197,11 +198,9 @@ impl FrostSigner {
                     signature_share,
                 })
             }
-            _ => {
-                Err(SignerError::InvalidUserState(
-                    "User state is not SigningRound1".to_string(),
-                ))
-            }
+            _ => Err(SignerError::InvalidUserState(
+                "User state is not SigningRound1".to_string(),
+            )),
         }
     }
 }

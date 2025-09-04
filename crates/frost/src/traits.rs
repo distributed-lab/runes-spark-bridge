@@ -1,5 +1,3 @@
-use std::collections::{BTreeMap, HashMap};
-use persistent_storage::error::DatabaseError;
 use async_trait::async_trait;
 use frost_secp256k1_tr::{
     Identifier, Signature, SigningPackage,
@@ -10,7 +8,9 @@ use frost_secp256k1_tr::{
     round1::{SigningCommitments, SigningNonces},
     round2::SignatureShare,
 };
+use persistent_storage::error::DbError;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use crate::errors::{AggregatorError, SignerError};
 
@@ -115,8 +115,8 @@ pub enum AggregatorUserState {
 
 #[async_trait]
 pub trait AggregatorUserStorage: Send + Sync {
-    async fn get_user_state(&self, user_id: String) -> Result<Option<AggregatorUserState>, DatabaseError>;
-    async fn set_user_state(&self, user_id: String, state: AggregatorUserState) -> Result<(), DatabaseError>;
+    async fn get_user_state(&self, user_id: String) -> Result<Option<AggregatorUserState>, DbError>;
+    async fn set_user_state(&self, user_id: String, state: AggregatorUserState) -> Result<(), DbError>;
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -149,8 +149,8 @@ pub enum SignerSessionState {
 
 #[async_trait]
 pub trait SignerUserStorage: Send + Sync {
-    async fn get_user_state(&self, user_id: String) -> Result<Option<SignerUserState>, DatabaseError>;
-    async fn set_user_state(&self, user_id: String, state: SignerUserState) -> Result<(), DatabaseError>;
+    async fn get_user_state(&self, user_id: String) -> Result<Option<SignerUserState>, DbError>;
+    async fn set_user_state(&self, user_id: String, state: SignerUserState) -> Result<(), DbError>;
 }
 
 #[async_trait]
@@ -159,12 +159,12 @@ pub trait SignerSessionStorage: Send + Sync {
         &self,
         user_id: String,
         session_id: String,
-    ) -> Result<Option<SignerSessionState>, SignerError>;
+    ) -> Result<Option<SignerSessionState>, DbError>;
 
     async fn set_session_state(
         &self,
         user_id: String,
         session_id: String,
         state: SignerSessionState,
-    ) -> Result<(), SignerError>;
+    ) -> Result<(), DbError>;
 }

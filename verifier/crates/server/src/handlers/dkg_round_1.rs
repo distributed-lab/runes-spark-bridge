@@ -2,8 +2,8 @@ use crate::errors::VerifierError;
 use crate::state::AppState;
 use axum::Json;
 use axum::extract::State;
-use tracing::instrument;
 use frost::traits::{DkgRound1Request, DkgRound1Response};
+use tracing::instrument;
 
 #[instrument(level = "debug", skip_all, ret)]
 pub async fn handle(

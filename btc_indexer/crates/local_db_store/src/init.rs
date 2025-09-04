@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use async_trait::async_trait;
 use persistent_storage::{
     config::PostgresDbCredentials,
-    error::{DatabaseError},
+    error::DbError,
     init::{PersistentDbConn, PersistentRepoShared, PersistentRepoTrait, PostgresRepo},
 };
 use tracing::instrument;
@@ -22,7 +22,7 @@ impl Debug for LocalDbIndexer {
 
 impl LocalDbIndexer {
     #[instrument(level = "trace", ret)]
-    pub async fn from_config(creds: PostgresDbCredentials) -> Result<Self, DatabaseError> {
+    pub async fn from_config(creds: PostgresDbCredentials) -> Result<Self, DbError> {
         let pool = PostgresRepo::from_config(creds).await?;
         sqlx::migrate!().run(&pool.pool).await?;
         Ok(Self {
@@ -33,7 +33,7 @@ impl LocalDbIndexer {
 
 #[async_trait]
 impl PersistentRepoTrait for LocalDbIndexer {
-    async fn get_conn(&self) -> Result<PersistentDbConn, DatabaseError> {
+    async fn get_conn(&self) -> Result<PersistentDbConn, DbError> {
         self.postgres_repo.get_conn().await
     }
 }

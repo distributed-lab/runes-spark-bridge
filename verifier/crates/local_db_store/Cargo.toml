@@ -12,6 +12,10 @@ sqlx = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 frost = { workspace = true }
+tokio = { workspace = true }
 
 [dev-dependencies]
-tokio = { workspace = true }
+anyhow = { workspace = true }
+global_utils = { workspace = true }
+dotenv = { workspace = true }
+frost-secp256k1-tr = { workspace = true }
