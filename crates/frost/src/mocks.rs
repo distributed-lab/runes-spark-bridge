@@ -1,21 +1,23 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use async_trait::async_trait;
 use persistent_storage::error::DbError;
-use tokio::sync::Mutex;
 
 use crate::{
     errors::{AggregatorError, SignerError},
     signer::FrostSigner,
     traits::*,
 };
+use async_trait::async_trait;
+use bitcoin::secp256k1::PublicKey;
+use tokio::sync::Mutex;
+use uuid::Uuid;
 
 pub struct MockSignerUserStorage {
-    user_states: Arc<Mutex<BTreeMap<String, SignerUserState>>>,
+    user_states: Arc<Mutex<BTreeMap<PublicKey, SignerUserState>>>,
 }
 
 pub struct MockSignerSessionStorage {
-    session_state: Arc<Mutex<BTreeMap<(String, String), SignerSessionState>>>,
+    session_state: Arc<Mutex<BTreeMap<(PublicKey, Uuid), SignerSessionState>>>,
 }
 
 impl MockSignerSessionStorage {
@@ -25,9 +27,9 @@ impl MockSignerSessionStorage {
         }
     }
 
-    pub async fn has_session(&self, user_id: &str, session_id: &str) -> bool {
+    pub async fn has_session(&self, user_id: &PublicKey, session_id: &Uuid) -> bool {
         let map = self.session_state.lock().await;
-        map.contains_key(&(user_id.to_string(), session_id.to_string()))
+        map.contains_key(&(*user_id, *session_id))
     }
 }
 
@@ -35,8 +37,8 @@ impl MockSignerSessionStorage {
 impl SignerSessionStorage for MockSignerSessionStorage {
     async fn get_session_state(
         &self,
-        user_id: String,
-        session_id: String,
+        user_id: PublicKey,
+        session_id: Uuid,
     ) -> Result<Option<SignerSessionState>, DbError> {
         Ok(self
             .session_state
@@ -48,8 +50,8 @@ impl SignerSessionStorage for MockSignerSessionStorage {
 
     async fn set_session_state(
         &self,
-        user_id: String,
-        session_id: String,
+        user_id: PublicKey,
+        session_id: Uuid,
         state: SignerSessionState,
     ) -> Result<(), DbError> {
         self.session_state
@@ -70,18 +72,18 @@ impl MockSignerUserStorage {
 
 #[async_trait]
 impl SignerUserStorage for MockSignerUserStorage {
-    async fn get_user_state(&self, user_id: String) -> Result<Option<SignerUserState>, DbError> {
+    async fn get_user_state(&self, user_id: PublicKey) -> Result<Option<SignerUserState>, DbError> {
         Ok(self.user_states.lock().await.get(&user_id).map(|state| state.clone()))
     }
 
-    async fn set_user_state(&self, user_id: String, state: SignerUserState) -> Result<(), DbError> {
+    async fn set_user_state(&self, user_id: PublicKey, state: SignerUserState) -> Result<(), DbError> {
         self.user_states.lock().await.insert(user_id, state);
         Ok(())
     }
 }
 
 pub struct MockAggregatorUserStorage {
-    user_states: Arc<Mutex<BTreeMap<String, AggregatorUserState>>>,
+    user_states: Arc<Mutex<BTreeMap<PublicKey, AggregatorUserState>>>,
 }
 
 impl MockAggregatorUserStorage {
@@ -94,11 +96,11 @@ impl MockAggregatorUserStorage {
 
 #[async_trait]
 impl AggregatorUserStorage for MockAggregatorUserStorage {
-    async fn get_user_state(&self, user_id: String) -> Result<Option<AggregatorUserState>, DbError> {
+    async fn get_user_state(&self, user_id: PublicKey) -> Result<Option<AggregatorUserState>, DbError> {
         Ok(self.user_states.lock().await.get(&user_id).map(|state| state.clone()))
     }
 
-    async fn set_user_state(&self, user_id: String, state: AggregatorUserState) -> Result<(), DbError> {
+    async fn set_user_state(&self, user_id: PublicKey, state: AggregatorUserState) -> Result<(), DbError> {
         self.user_states.lock().await.insert(user_id, state);
         Ok(())
     }

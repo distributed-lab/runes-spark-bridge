@@ -1,10 +1,7 @@
-use std::sync::Arc;
-
-use frost_secp256k1_tr::{Identifier, keys::Tweak};
-
-use rand_core::OsRng;
-
 use crate::{config::SignerConfig, errors::SignerError, traits::*};
+use frost_secp256k1_tr::{Identifier, keys::Tweak};
+use rand_core::OsRng;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct FrostSigner {
@@ -55,9 +52,7 @@ impl FrostSigner {
                     round1_package: package,
                 })
             }
-            _ => Err(SignerError::InvalidUserState(
-                "User state is not SigningRound1".to_string(),
-            )),
+            _ => Err(SignerError::InvalidUserState("User state is not None".to_string())),
         }
     }
 
@@ -85,9 +80,7 @@ impl FrostSigner {
                     round2_packages: packages,
                 })
             }
-            _ => Err(SignerError::InvalidUserState(
-                "User state is not SigningRound1".to_string(),
-            )),
+            _ => Err(SignerError::InvalidUserState("User state is not DkgRound1".to_string())),
         }
     }
 
@@ -112,9 +105,7 @@ impl FrostSigner {
                     .await?;
                 Ok(DkgFinalizeResponse { public_key_package })
             }
-            _ => Err(SignerError::InvalidUserState(
-                "User state is not SigningRound1".to_string(),
-            )),
+            _ => Err(SignerError::InvalidUserState("User state is not DkgRound2".to_string())),
         }
     }
 
@@ -152,7 +143,7 @@ impl FrostSigner {
                 })
             }
             _ => Err(SignerError::InvalidUserState(
-                "User state is not SigningRound1".to_string(),
+                "User state is not DkgFinalized".to_string(),
             )),
         }
     }
@@ -183,12 +174,12 @@ impl FrostSigner {
 
                 self.session_storage
                     .set_session_state(
-                        user_id.clone(),
+                        user_id,
                         session_id.clone(),
                         SignerSessionState::SigningRound2 {
-                            key_package: key_package.clone(),
-                            tweak: tweak.clone(),
-                            signature_share: signature_share.clone(),
+                            key_package,
+                            tweak,
+                            signature_share,
                         },
                     )
                     .await?;

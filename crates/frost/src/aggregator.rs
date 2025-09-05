@@ -1,6 +1,8 @@
+use bitcoin::secp256k1::PublicKey;
 use std::{collections::BTreeMap, sync::Arc};
 
 use crate::{config::AggregatorConfig, errors::AggregatorError, traits::*};
+use frost_secp256k1_tr::keys::PublicKeyPackage;
 use frost_secp256k1_tr::{Identifier, Signature, SigningPackage, keys, keys::Tweak};
 use futures::future::join_all;
 use tracing::{debug, instrument};
@@ -27,7 +29,7 @@ impl FrostAggregator {
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    pub async fn dkg_round_1(&self, user_id: String) -> Result<(), AggregatorError> {
+    pub async fn dkg_round_1(&self, user_id: PublicKey) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
         debug!("round1 current state: {:?}", state);
         match state {
@@ -72,7 +74,7 @@ impl FrostAggregator {
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    async fn dkg_round_2(&self, user_id: String) -> Result<(), AggregatorError> {
+    async fn dkg_round_2(&self, user_id: PublicKey) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
         debug!("round2 current state: {:?}", state);
 
@@ -121,7 +123,7 @@ impl FrostAggregator {
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    async fn dkg_finalize(&self, user_id: String) -> Result<(), AggregatorError> {
+    async fn dkg_finalize(&self, user_id: PublicKey) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
         debug!("finalize current state: {:?}", state);
 
@@ -182,7 +184,7 @@ impl FrostAggregator {
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    pub async fn run_dkg_flow(&self, user_id: String) -> Result<keys::PublicKeyPackage, AggregatorError> {
+    pub async fn run_dkg_flow(&self, user_id: PublicKey) -> Result<keys::PublicKeyPackage, AggregatorError> {
         self.dkg_round_1(user_id.clone()).await?;
         self.dkg_round_2(user_id.clone()).await?;
         self.dkg_finalize(user_id.clone()).await?;
@@ -199,8 +201,8 @@ impl FrostAggregator {
     #[instrument(level = "debug", skip(self), ret)]
     async fn sign_round_1(
         &self,
-        user_id: String,
-        session_id: String,
+        user_id: PublicKey,
+        session_id: Uuid,
         message: &[u8],
         tweak: Option<&[u8]>,
     ) -> Result<(), AggregatorError> {
@@ -213,7 +215,7 @@ impl FrostAggregator {
                 for (verifier_id, signer_client) in self.verifiers.clone() {
                     let request = SignRound1Request {
                         user_id: user_id.clone(),
-                        session_id: session_id.clone(),
+                        session_id,
                         tweak: tweak.map(|t| t.to_vec()),
                     };
                     let join_handle = async move { (verifier_id, signer_client.sign_round_1(request).await) };
@@ -249,7 +251,7 @@ impl FrostAggregator {
     }
 
     #[instrument(level = "debug", skip(self), ret)]
-    async fn sign_round_2(&self, user_id: String, session_id: String) -> Result<(), AggregatorError> {
+    async fn sign_round_2(&self, user_id: PublicKey, session_id: Uuid) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         match state {
@@ -269,7 +271,7 @@ impl FrostAggregator {
                 for (verifier_id, signer_client) in self.verifiers.clone() {
                     let request = SignRound2Request {
                         user_id: user_id.clone(),
-                        session_id: session_id.clone(),
+                        session_id,
                         signing_package: signing_package.clone(),
                     };
                     let join_handle = async move { (verifier_id, signer_client.sign_round_2(request).await) };
@@ -317,11 +319,11 @@ impl FrostAggregator {
     #[instrument(level = "debug", skip(self), ret)]
     pub async fn run_signing_flow(
         &self,
-        user_id: String,
+        user_id: PublicKey,
         message: &[u8],
         tweak: Option<&[u8]>,
     ) -> Result<Signature, AggregatorError> {
-        let session_id = Uuid::new_v4().to_string();
+        let session_id = global_utils::common_types::get_uuid();
 
         self.sign_round_1(user_id.clone(), session_id.clone(), message, tweak)
             .await?;
