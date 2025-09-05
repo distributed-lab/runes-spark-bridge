@@ -311,7 +311,8 @@ impl FrostAggregator {
         message: &[u8],
         tweak: Option<&[u8]>,
     ) -> Result<Signature, AggregatorError> {
-        let session_id = global_utils::common_types::get_uuid();
+        //let session_id = global_utils::common_types::get_uuid();
+        let session_id = Uuid::new_v4();
 
         self.sign_round_1(user_id.clone(), session_id.clone(), message, tweak).await?;
         self.sign_round_2(user_id.clone(), session_id.clone()).await?;

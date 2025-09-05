@@ -10,9 +10,10 @@ use frost_secp256k1_tr::{
     round1::{SigningCommitments, SigningNonces},
     round2::SignatureShare,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use uuid::Uuid;
 use crate::errors::{AggregatorError, SignerError};
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DkgRound1Request {
@@ -37,6 +38,7 @@ pub struct DkgRound2Response {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DkgFinalizeRequest {
+
     pub user_id: PublicKey,
     pub round1_packages: BTreeMap<Identifier, round1::Package>,
     pub round2_packages: BTreeMap<Identifier, round2::Package>,
