@@ -5,7 +5,7 @@ CREATE SCHEMA verifier;
 CREATE TABLE IF NOT EXISTS verifier.user_state
 (
     user_pubkey TEXT NOT NULL,
-    signing_state JSONB NOT NULL,
+    dkg_state JSONB NOT NULL,
     PRIMARY KEY (user_pubkey)
 );
 

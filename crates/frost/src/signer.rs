@@ -46,7 +46,7 @@ impl FrostSigner {
                 self.user_storage
                     .set_user_state(
                         user_id.clone(),
-                        SignerUserState::DkgRound1 {
+                        DkgUserState::DkgRound1 {
                             round1_secret_package: secret_package,
                         },
                     )
@@ -66,7 +66,7 @@ impl FrostSigner {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         match state {
-            Some(SignerUserState::DkgRound1 { round1_secret_package }) => {
+            Some(DkgUserState::DkgRound1 { round1_secret_package }) => {
                 let (secret_package, packages) =
                     frost_secp256k1_tr::keys::dkg::part2(round1_secret_package.clone(), &request.round1_packages)
                         .map_err(|e| SignerError::Internal(format!("DKG round2 failed: {e}")))?;
@@ -74,7 +74,7 @@ impl FrostSigner {
                 self.user_storage
                     .set_user_state(
                         user_id.clone(),
-                        SignerUserState::DkgRound2 {
+                        DkgUserState::DkgRound2 {
                             round2_secret_package: secret_package,
                             round1_packages: request.round1_packages,
                         },
@@ -95,7 +95,7 @@ impl FrostSigner {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         match state {
-            Some(SignerUserState::DkgRound2 {
+            Some(DkgUserState::DkgRound2 {
                 round2_secret_package,
                 round1_packages,
             }) => {
@@ -107,7 +107,7 @@ impl FrostSigner {
                 .map_err(|e| SignerError::Internal(format!("DKG finalize failed: {e}")))?;
 
                 self.user_storage
-                    .set_user_state(user_id.clone(), SignerUserState::DkgFinalized { key_package })
+                    .set_user_state(user_id.clone(), DkgUserState::DkgFinalized { key_package })
                     .await?;
                 Ok(DkgFinalizeResponse { public_key_package })
             }
@@ -124,7 +124,7 @@ impl FrostSigner {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         match state {
-            Some(SignerUserState::DkgFinalized { key_package }) => {
+            Some(DkgUserState::DkgFinalized { key_package }) => {
                 let tweak_key_package = match tweak.clone() {
                     Some(tweak) => key_package.clone().tweak(Some(tweak.to_vec())),
                     None => key_package.clone(),

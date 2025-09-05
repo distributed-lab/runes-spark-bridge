@@ -121,7 +121,7 @@ pub trait AggregatorUserStorage: Send + Sync {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SignerUserState {
+pub enum DkgUserState {
     DkgRound1 {
         round1_secret_package: round1::SecretPackage,
     },
@@ -150,8 +150,8 @@ pub enum SignerSessionState {
 
 #[async_trait]
 pub trait SignerUserStorage: Send + Sync {
-    async fn get_user_state(&self, user_id: PublicKey) -> Result<Option<SignerUserState>, DbError>;
-    async fn set_user_state(&self, user_id: PublicKey, state: SignerUserState) -> Result<(), DbError>;
+    async fn get_user_state(&self, user_id: PublicKey) -> Result<Option<DkgUserState>, DbError>;
+    async fn set_user_state(&self, user_id: PublicKey, state: DkgUserState) -> Result<(), DbError>;
 }
 
 #[async_trait]

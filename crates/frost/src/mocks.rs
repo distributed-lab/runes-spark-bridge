@@ -13,7 +13,7 @@ use tokio::sync::Mutex;
 use uuid::Uuid;
 
 pub struct MockSignerUserStorage {
-    user_states: Arc<Mutex<BTreeMap<PublicKey, SignerUserState>>>,
+    user_states: Arc<Mutex<BTreeMap<PublicKey, DkgUserState>>>,
 }
 
 pub struct MockSignerSessionStorage {
@@ -72,11 +72,11 @@ impl MockSignerUserStorage {
 
 #[async_trait]
 impl SignerUserStorage for MockSignerUserStorage {
-    async fn get_user_state(&self, user_id: PublicKey) -> Result<Option<SignerUserState>, DbError> {
+    async fn get_user_state(&self, user_id: PublicKey) -> Result<Option<DkgUserState>, DbError> {
         Ok(self.user_states.lock().await.get(&user_id).map(|state| state.clone()))
     }
 
-    async fn set_user_state(&self, user_id: PublicKey, state: SignerUserState) -> Result<(), DbError> {
+    async fn set_user_state(&self, user_id: PublicKey, state: DkgUserState) -> Result<(), DbError> {
         self.user_states.lock().await.insert(user_id, state);
         Ok(())
     }

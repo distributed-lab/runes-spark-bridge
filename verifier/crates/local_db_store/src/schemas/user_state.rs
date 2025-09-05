@@ -1,6 +1,6 @@
 use crate::DbError;
 use crate::LocalDbStore;
-use frost::traits::{SignerSessionState, SignerSessionStorage, SignerUserState, SignerUserStorage};
+use frost::traits::{SignerSessionState, SignerSessionStorage, DkgUserState, SignerUserStorage};
 use global_utils::common_types::Secp256K1PubkeyWrapped;
 use sqlx::Acquire;
 use sqlx::types::Json;
@@ -12,12 +12,12 @@ impl SignerUserStorage for LocalDbStore {
     async fn get_user_state(
         &self,
         user_pubkey: bitcoin::secp256k1::PublicKey,
-    ) -> Result<Option<SignerUserState>, DbError> {
+    ) -> Result<Option<DkgUserState>, DbError> {
         let mut lock = self.0.acquire().await?;
         let pg_conn = lock.acquire().await?;
 
-        let result: Option<(Json<SignerUserState>,)> =
-            sqlx::query_as("SELECT signing_state FROM verifier.user_state WHERE user_pubkey = $1")
+        let result: Option<(Json<DkgUserState>,)> =
+            sqlx::query_as("SELECT dkg_state FROM verifier.user_state WHERE user_pubkey = $1")
                 .bind(Secp256K1PubkeyWrapped(user_pubkey))
                 .fetch_optional(pg_conn)
                 .await
@@ -33,12 +33,12 @@ impl SignerUserStorage for LocalDbStore {
     async fn set_user_state(
         &self,
         user_pubkey: bitcoin::secp256k1::PublicKey,
-        user_state: SignerUserState,
+        user_state: DkgUserState,
     ) -> Result<(), DbError> {
         let mut conn = self.0.acquire().await?;
         let pg_conn = conn.acquire().await?;
 
-        let _ = sqlx::query("INSERT INTO verifier.user_state (user_pubkey, signing_state) VALUES ($1, $2) ON CONFLICT (user_pubkey) DO UPDATE SET signing_state = $2")
+        let _ = sqlx::query("INSERT INTO verifier.user_state (user_pubkey, dkg_state) VALUES ($1, $2) ON CONFLICT (user_pubkey) DO UPDATE SET dkg_state = $2")
             .bind(Secp256K1PubkeyWrapped(user_pubkey))
             .bind(Json(user_state))
             .execute(pg_conn)
