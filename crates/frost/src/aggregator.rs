@@ -28,10 +28,10 @@ impl FrostAggregator {
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn dkg_round_1(&self, user_id: PublicKey) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
-        debug!("round1 current state: {:?}", state);
+
         match state {
             Some(_) => Err(AggregatorError::InvalidUserState("User state is not None".to_string())),
             None => {
@@ -73,10 +73,9 @@ impl FrostAggregator {
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     async fn dkg_round_2(&self, user_id: PublicKey) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
-        debug!("round2 current state: {:?}", state);
 
         match state {
             Some(AggregatorUserState::DkgRound1 { round1_packages }) => {
@@ -117,15 +116,14 @@ impl FrostAggregator {
                 Ok(())
             }
             _ => Err(AggregatorError::InvalidUserState(
-                "User state is not DkgRound2".to_string(),
+                "User state is not DkgRound1".to_string(),
             )),
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     async fn dkg_finalize(&self, user_id: PublicKey) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
-        debug!("finalize current state: {:?}", state);
 
         match state {
             Some(AggregatorUserState::DkgRound2 {
@@ -178,12 +176,12 @@ impl FrostAggregator {
                 Ok(())
             }
             _ => Err(AggregatorError::InvalidUserState(
-                "User state is not DkgFinalized".to_string(),
+                "User state is not DkgRound2".to_string(),
             )),
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn run_dkg_flow(&self, user_id: PublicKey) -> Result<keys::PublicKeyPackage, AggregatorError> {
         self.dkg_round_1(user_id.clone()).await?;
         self.dkg_round_2(user_id.clone()).await?;
@@ -198,7 +196,7 @@ impl FrostAggregator {
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     async fn sign_round_1(
         &self,
         user_id: PublicKey,
@@ -250,7 +248,7 @@ impl FrostAggregator {
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     async fn sign_round_2(&self, user_id: PublicKey, session_id: Uuid) -> Result<(), AggregatorError> {
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
@@ -311,12 +309,12 @@ impl FrostAggregator {
                 Ok(())
             }
             _ => Err(AggregatorError::InvalidUserState(
-                "User state is not DkgFinalized".to_string(),
+                "User state is not SigningRound1".to_string(),
             )),
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn run_signing_flow(
         &self,
         user_id: PublicKey,
@@ -346,7 +344,7 @@ impl FrostAggregator {
                 Ok(signature)
             }
             _ => Err(AggregatorError::InvalidUserState(
-                "User state is not DkgFinalized".to_string(),
+                "User state is not SigningRound2".to_string(),
             )),
         }
     }

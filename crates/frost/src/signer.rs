@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use frost_secp256k1_tr::{Identifier, keys::Tweak};
 
-use rand_core::OsRng;
-
 use crate::{config::SignerConfig, errors::SignerError, traits::*};
+use rand_core::OsRng;
+use tracing::instrument;
 
 #[derive(Clone)]
 pub struct FrostSigner {
@@ -28,6 +28,7 @@ impl FrostSigner {
         }
     }
 
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn dkg_round_1(&self, request: DkgRound1Request) -> Result<DkgRound1Response, SignerError> {
         let user_id = request.user_id;
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
@@ -59,6 +60,7 @@ impl FrostSigner {
         }
     }
 
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn dkg_round_2(&self, request: DkgRound2Request) -> Result<DkgRound2Response, SignerError> {
         let user_id = request.user_id;
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
@@ -87,6 +89,7 @@ impl FrostSigner {
         }
     }
 
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn dkg_finalize(&self, request: DkgFinalizeRequest) -> Result<DkgFinalizeResponse, SignerError> {
         let user_id = request.user_id;
         let state = self.user_storage.get_user_state(user_id.clone()).await?;
@@ -112,6 +115,7 @@ impl FrostSigner {
         }
     }
 
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn sign_round_1(&self, request: SignRound1Request) -> Result<SignRound1Response, SignerError> {
         let user_id = request.user_id;
         let session_id = request.session_id.clone();
@@ -151,6 +155,7 @@ impl FrostSigner {
         }
     }
 
+    #[instrument(level = "trace", skip(self), ret)]
     pub async fn sign_round_2(&self, request: SignRound2Request) -> Result<SignRound2Response, SignerError> {
         let user_id = request.user_id.clone();
         let session_id = request.session_id.clone();

@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 #[async_trait::async_trait]
 impl SignerSessionStorage for LocalDbStore {
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     async fn get_session_state(
         &self,
         user_pubkey: PublicKey,
@@ -21,7 +21,6 @@ impl SignerSessionStorage for LocalDbStore {
         let mut lock = self.0.acquire().await?;
         let pg_conn = lock.acquire().await?;
 
-        debug!(user_id =% user_pubkey, session_id =% session_id, "Get session state" );
         let result: Option<(Json<SignerSessionState>,)> = sqlx::query_as(
             "SELECT session_state FROM verifier.user_session_state WHERE user_pubkey = $1 AND session_uuid = $2",
         )
@@ -38,7 +37,7 @@ impl SignerSessionStorage for LocalDbStore {
         }
     }
 
-    #[instrument(level = "debug", skip(self), ret)]
+    #[instrument(level = "trace", skip(self), ret)]
     async fn set_session_state(
         &self,
         user_pubkey: PublicKey,
@@ -48,7 +47,6 @@ impl SignerSessionStorage for LocalDbStore {
         let mut lock = self.0.acquire().await?;
         let pg_conn = lock.acquire().await?;
 
-        debug!(user_id =% user_pubkey, session_id =% session_uuid, state =? state, "Set session state" );
         let _ = sqlx::query("INSERT INTO verifier.user_session_state (user_pubkey, session_uuid, session_state) VALUES ($1, $2, $3) ON CONFLICT (user_pubkey, session_uuid) DO UPDATE SET session_state = $3")
             .bind(Secp256K1PubkeyWrapped(user_pubkey))
             .bind(session_uuid)
