@@ -3,6 +3,7 @@ use crate::types::*;
 use frost::aggregator::FrostAggregator;
 use frost::utils::convert_public_key_package;
 use persistent_storage::init::PostgresRepo;
+use std::str::FromStr;
 use tokio::sync::mpsc;
 use tracing;
 use uuid::Uuid;
@@ -65,7 +66,7 @@ impl FlowProcessorRouter {
     async fn run_dkg_flow(&mut self, request: DkgFlowRequest) -> Result<DkgFlowResponse, FlowProcessorError> {
         let public_key_package = self
             .frost_aggregator
-            .run_dkg_flow(request.user_public_key)
+            .run_dkg_flow(bitcoin::secp256k1::PublicKey::from_str(&request.user_public_key).unwrap())
             .await
             .map_err(|e| FlowProcessorError::FrostAggregatorError(e.to_string()))?;
 

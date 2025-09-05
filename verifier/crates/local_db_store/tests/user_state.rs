@@ -1,73 +1,28 @@
 mod utils;
 
-use serde::{Deserialize, Serialize};
-
-mod test_btc_indexer_requests {
+mod test_mocked_verifier_db_usage {
     pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./migrations");
 
     use crate::utils::TEST_LOGGER;
-    use frost::aggregator::FrostAggregator;
+    use bitcoin::secp256k1::{PublicKey, Secp256k1, SecretKey};
     use frost::config::{AggregatorConfig, SignerConfig};
-    use frost::mocks::{MockAggregatorUserStorage, MockSignerClient};
-    use frost::signer::FrostSigner;
-    use frost::traits::SignerClient;
+    use frost::mocks::{MockAggregatorUserStorage, MockSignerClient, MockSignerSessionStorage, MockSignerUserStorage};
+    use frost::{aggregator::FrostAggregator, config::*, mocks::*, signer::FrostSigner, traits::SignerClient};
     use frost_secp256k1_tr::Identifier;
-    use persistent_storage::config::PostgresDbCredentials;
     use persistent_storage::init::PostgresRepo;
     use sqlx::{Pool, Postgres};
     use std::collections::BTreeMap;
     use std::sync::Arc;
-    use tracing::debug;
     use verifier_local_db_store::LocalDbStore;
 
-    // #[sqlx::test(migrations = "./migrations")]
-    // #[sqlx::test(migrator = "MIGRATOR")]
-    // async fn test_user_state_setting(pool: Pool<Postgres>) -> anyhow::Result<()> {
-    #[tokio::test]
-    async fn test_user_state_setting() -> anyhow::Result<()> {
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn test_user_state_setting(pool: Pool<Postgres>) -> anyhow::Result<()> {
         dotenv::dotenv()?;
         let _logger_guard = &*TEST_LOGGER;
-        let db_entity = PostgresRepo::from_config(PostgresDbCredentials::from_db_url()?).await?;
+        let db_entity = PostgresRepo { pool };
 
         let local_storage: Arc<LocalDbStore> = LocalDbStore(db_entity.pool).into_shared();
         let _ = test_parallel_signing_sessions_via_aggregator(local_storage).await?;
-
-        Ok(())
-    }
-    #[tokio::test]
-    async fn test_user_state_setting_one() -> anyhow::Result<()> {
-        dotenv::dotenv()?;
-        let _logger_guard = &*TEST_LOGGER;
-        let db_entity = PostgresRepo::from_config(PostgresDbCredentials::from_db_url()?).await?;
-
-        let local_storage: Arc<LocalDbStore> = LocalDbStore(db_entity.pool).into_shared();
-        let _ = test_parallel_signing_sessions_via_aggregator_one(local_storage).await?;
-
-        Ok(())
-    }
-
-    async fn test_parallel_signing_sessions_via_aggregator_one(
-        local_db_store: Arc<LocalDbStore>,
-    ) -> anyhow::Result<()> {
-        let verifiers_map = init_objects(local_db_store)?;
-
-        let aggregator = FrostAggregator::new(
-            AggregatorConfig {
-                threshold: 2,
-                total_participants: 3,
-                verifier_identifiers: vec![1, 2, 3],
-            },
-            verifiers_map,
-            Arc::new(MockAggregatorUserStorage::new()),
-        );
-
-        let user_id = "test_user1".to_string();
-        let msg_a = b"parallel message A".to_vec();
-        let msg_b = b"parallel message B".to_vec();
-        let tweak = None::<&[u8]>;
-        debug!("DKG flow");
-
-        aggregator.dkg_round_1(user_id.clone()).await?;
 
         Ok(())
     }
@@ -85,13 +40,15 @@ mod test_btc_indexer_requests {
             Arc::new(MockAggregatorUserStorage::new()),
         );
 
-        let user_id = "test_user".to_string();
+        let secp = Secp256k1::new();
+        let secret_key = SecretKey::from_slice(&[1u8; 32]).unwrap();
+        let user_id = PublicKey::from_secret_key(&secp, &secret_key);
         let msg_a = b"parallel message A".to_vec();
         let msg_b = b"parallel message B".to_vec();
         let tweak = None::<&[u8]>;
-        debug!("DKG flow");
-        let public_key_package = aggregator.run_dkg_flow(user_id.clone()).await?;
-        debug!("DKG flow2");
+
+        let public_key_package = aggregator.run_dkg_flow(user_id.clone()).await.unwrap();
+
         let (sig_res_a, sig_res_b) = tokio::join!(
             aggregator.run_signing_flow(user_id.clone(), msg_a.as_slice(), tweak),
             aggregator.run_signing_flow(user_id.clone(), msg_b.as_slice(), tweak),
@@ -116,22 +73,33 @@ mod test_btc_indexer_requests {
         Ok(())
     }
 
-    fn create_signer(identifier: u16, local_db_store: Arc<LocalDbStore>) -> FrostSigner {
-        FrostSigner::new(
-            SignerConfig {
-                identifier,
-                threshold: 2,
-                total_participants: 3,
-            },
-            local_db_store.clone(),
-            local_db_store,
-        )
+    fn create_mock_signer(identifier: u16, real_local_db_store: Option<Arc<LocalDbStore>>) -> FrostSigner {
+        match real_local_db_store {
+            Some(local_db_store) => FrostSigner::new(
+                SignerConfig {
+                    identifier,
+                    threshold: 2,
+                    total_participants: 3,
+                },
+                local_db_store.clone(),
+                local_db_store,
+            ),
+            None => FrostSigner::new(
+                SignerConfig {
+                    identifier,
+                    threshold: 2,
+                    total_participants: 3,
+                },
+                Arc::new(MockSignerUserStorage::new()),
+                Arc::new(MockSignerSessionStorage::new()),
+            ),
+        }
     }
 
     fn init_objects(local_db_store: Arc<LocalDbStore>) -> anyhow::Result<BTreeMap<Identifier, Arc<dyn SignerClient>>> {
-        let signer1 = create_signer(1, local_db_store.clone());
-        let signer2 = create_signer(2, local_db_store.clone());
-        let signer3 = create_signer(3, local_db_store);
+        let signer1 = create_mock_signer(1, Some(local_db_store.clone()));
+        let signer2 = create_mock_signer(2, None);
+        let signer3 = create_mock_signer(3, None);
 
         let mock_signer_client1 = MockSignerClient::new(signer1);
         let mock_signer_client2 = MockSignerClient::new(signer2);

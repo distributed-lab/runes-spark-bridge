@@ -1,7 +1,10 @@
-use crate::{config::SignerConfig, errors::SignerError, traits::*};
-use frost_secp256k1_tr::{Identifier, keys::Tweak};
-use rand_core::OsRng;
 use std::sync::Arc;
+
+use frost_secp256k1_tr::{Identifier, keys::Tweak};
+
+use rand_core::OsRng;
+
+use crate::{config::SignerConfig, errors::SignerError, traits::*};
 
 #[derive(Clone)]
 pub struct FrostSigner {
@@ -151,7 +154,6 @@ impl FrostSigner {
     pub async fn sign_round_2(&self, request: SignRound2Request) -> Result<SignRound2Response, SignerError> {
         let user_id = request.user_id.clone();
         let session_id = request.session_id.clone();
-        // let state = self.user_storage.get_user_state(user_id.clone()).await?;
 
         let session_state = self
             .session_storage

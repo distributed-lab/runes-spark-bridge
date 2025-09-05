@@ -3,9 +3,9 @@ name = "gateway_utils"
 edition = "2024"
 
 [dependencies]
-frost = { workspace = true }
-gateway_config_parser = { workspace = true }
 async-trait = { workspace = true }
+frost = { workspace = true }
+frost-secp256k1-tr = { workspace = true }
+gateway_config_parser = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
-frost-secp256k1-tr = { workspace = true }

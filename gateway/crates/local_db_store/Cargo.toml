@@ -5,13 +5,13 @@ edition = "2024"
 
 [dependencies]
 async-trait = { workspace = true }
+frost = { workspace = true }
 persistent_storage = { workspace = true }
+serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 uuid = { workspace = true }
-frost = { workspace = true }
-serde_json = { workspace = true }
 
 [dev-dependencies]
 global_utils = { workspace = true }

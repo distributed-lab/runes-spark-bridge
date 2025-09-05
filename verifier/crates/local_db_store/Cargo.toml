@@ -4,18 +4,19 @@ edition = "2024"
 
 [dependencies]
 async-trait = { workspace = true }
-tracing = { workspace = true }
+bitcoin = { workspace = true }
+frost = { workspace = true }
+global_utils = { workspace = true }
 persistent_storage = { workspace = true }
-thiserror = { workspace = true }
-uuid = { workspace = true }
-sqlx = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-frost = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
 tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }
-global_utils = { workspace = true }
 dotenv = { workspace = true }
 frost-secp256k1-tr = { workspace = true }

@@ -3,12 +3,12 @@ name = "gateway_config_parser"
 edition = "2024"
 
 [dependencies]
+config = { workspace = true }
 dotenv = { workspace = true }
 global_utils = { workspace = true }
 serde = { workspace = true }
-config = { workspace = true }
-tracing = { workspace = true }
 thiserror = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 toml = { workspace = true }

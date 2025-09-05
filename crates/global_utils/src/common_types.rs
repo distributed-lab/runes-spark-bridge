@@ -100,6 +100,28 @@ impl<'r> Decode<'r, sqlx::Postgres> for UrlWrapped {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Secp256K1PubkeyWrapped(pub bitcoin::secp256k1::PublicKey);
+
+impl Type<sqlx::Postgres> for Secp256K1PubkeyWrapped {
+    fn type_info() -> PgTypeInfo {
+        <String as Type<sqlx::Postgres>>::type_info()
+    }
+}
+
+impl Encode<'_, sqlx::Postgres> for Secp256K1PubkeyWrapped {
+    fn encode_by_ref(&self, buf: &mut <Postgres as Database>::ArgumentBuffer<'_>) -> Result<IsNull, BoxDynError> {
+        <String as Encode<sqlx::Postgres>>::encode_by_ref(&self.0.to_string(), buf)
+    }
+}
+
+impl<'r> Decode<'r, sqlx::Postgres> for Secp256K1PubkeyWrapped {
+    fn decode(value: PgValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
+        let s = <String as Decode<sqlx::Postgres>>::decode(value)?;
+        Ok(Secp256K1PubkeyWrapped(bitcoin::secp256k1::PublicKey::from_str(&s)?))
+    }
+}
+
 impl PartialSchema for UrlWrapped {
     fn schema() -> openapi::RefOr<openapi::schema::Schema> {
         utoipa::openapi::ObjectBuilder::new()
