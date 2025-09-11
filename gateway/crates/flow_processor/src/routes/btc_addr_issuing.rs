@@ -1,6 +1,6 @@
 use crate::error::{BtcAddrIssueErrorEnum, FlowProcessorError};
 use crate::flow_router::FlowProcessorRouter;
-use crate::types::DkgFlowRequest;
+use crate::types::BtcAddrIssueRequest;
 use bitcoin::key::{Keypair, TweakedPublicKey, UntweakedKeypair, UntweakedPublicKey};
 use bitcoin::secp256k1::scalar::OutOfRangeError;
 use bitcoin::secp256k1::{Parity, Scalar, Secp256k1};
@@ -18,7 +18,7 @@ const LOG_PATH: &str = "flow_processor:routes:btc_addr_issuing";
 
 pub async fn handle(
     flow_processor: &mut FlowProcessorRouter,
-    request: DkgFlowRequest,
+    request: BtcAddrIssueRequest,
     human_readable_part_url: impl Into<KnownHrp>,
 ) -> Result<Address, FlowProcessorError> {
     info!("[{LOG_PATH}] Handling btc addr issuing ...");
@@ -30,7 +30,7 @@ pub async fn handle(
 #[instrument(skip(flow_processor, request, human_readable_part_url), level = "trace", ret)]
 async fn _handle_inner(
     flow_processor: &mut FlowProcessorRouter,
-    request: &DkgFlowRequest,
+    request: &BtcAddrIssueRequest,
     human_readable_part_url: impl Into<KnownHrp>,
 ) -> Result<Address, BtcAddrIssueErrorEnum> {
     let human_readable_part_url = human_readable_part_url.into();
@@ -110,7 +110,7 @@ async fn _handle_inner(
     Ok(Address::p2tr_tweaked(tweaked_x, human_readable_part_url))
 }
 
-fn generate_byte_seq(request: &DkgFlowRequest, nonce: Nonce) -> Vec<u8> {
+fn generate_byte_seq(request: &BtcAddrIssueRequest, nonce: Nonce) -> Vec<u8> {
     TweakGenerator::serialize_tweak_data(request.musig_id.get_public_key(), request.musig_id.get_rune_id(), nonce)
 }
 
@@ -124,7 +124,7 @@ mod tweak_signature_test {
     pub static TEST_LOGGER: LazyLock<LoggerGuard> = LazyLock::new(|| init_logger());
 
     use crate::routes::btc_addr_issuing::generate_byte_seq;
-    use crate::types::DkgFlowRequest;
+    use crate::types::BtcAddrIssueRequest;
     use bitcoin::hashes::Hash;
     use bitcoin::secp256k1;
     use bitcoin::secp256k1::{PublicKey, Secp256k1, SecretKey};
@@ -147,7 +147,7 @@ mod tweak_signature_test {
         let nonce = TweakGenerator::generate_nonce();
 
         let generate_byte_seq = |public_key_package: &PublicKeyPackage| -> Vec<u8> {
-            let musig = DkgFlowRequest {
+            let musig = BtcAddrIssueRequest {
                 musig_id: MusigId::User {
                     user_public_key: PublicKey::from_str(
                         "038144ac71b61ab0e0a56967696a4f31a0cdd492cd3753d59aa978e0c8eaa5a60e",

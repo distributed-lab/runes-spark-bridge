@@ -1,4 +1,4 @@
-use crate::types::DkgFlowRequest;
+use crate::types::BtcAddrIssueRequest;
 use bitcoin::secp256k1;
 use frost::errors::AggregatorError;
 use gateway_local_db_store::schemas::deposit_address::DepositStatus;
@@ -31,7 +31,7 @@ pub enum BtcAddrIssueErrorEnum {
     #[error("Unfinished dkg state, please wait for completion. got: {got}, has to be Finalized")]
     UnfinishedDkgState { got: String },
     #[error("No required entry in db for request: {0:?}, while MuSigId exists")]
-    NoDepositAddrInfoInDb(DkgFlowRequest),
+    NoDepositAddrInfoInDb(BtcAddrIssueRequest),
     #[error("Occurred error on Aggregator, failed to finalize dkg, err: {0}")]
     AggregatorError(#[from] AggregatorError),
     #[error("Occurred error tweak generation, err: {0}")]

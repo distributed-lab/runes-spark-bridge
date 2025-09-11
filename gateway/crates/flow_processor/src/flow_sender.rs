@@ -51,8 +51,8 @@ impl FlowSender {
 
 #[async_trait::async_trait]
 
-impl TypedMessageSender<DkgFlowRequest, DkgFlowResponse> for FlowSender {
-    async fn send(&self, dkg_message: DkgFlowRequest) -> Result<DkgFlowResponse, FlowProcessorError> {
+impl TypedMessageSender<BtcAddrIssueRequest, BtcAddrIssueResponse> for FlowSender {
+    async fn send(&self, dkg_message: BtcAddrIssueRequest) -> Result<BtcAddrIssueResponse, FlowProcessorError> {
         let response = self
             .send_messsage(FlowProcessorMessage::IssueDepositAddress(dkg_message))
             .await?;

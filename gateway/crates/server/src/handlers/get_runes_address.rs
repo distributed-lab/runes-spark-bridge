@@ -2,7 +2,7 @@ use crate::error::GatewayError;
 use crate::state::AppState;
 use anyhow::bail;
 use axum::{Json, extract::State};
-use gateway_flow_processor::types::{DkgFlowRequest, FlowProcessorMessage, FlowProcessorResponse};
+use gateway_flow_processor::types::{BtcAddrIssueRequest, FlowProcessorMessage, FlowProcessorResponse};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use tracing::{debug, instrument};
@@ -38,7 +38,7 @@ async fn _handle_inner(
     debug!("[handler-btc-addr-issuing] Handling request: {request:?}");
     let possible_response = state
         .flow_sender
-        .send_messsage(FlowProcessorMessage::IssueDepositAddress(DkgFlowRequest {
+        .send_messsage(FlowProcessorMessage::IssueDepositAddress(BtcAddrIssueRequest {
             musig_id: frost::types::MusigId::User {
                 rune_id: request.rune_id,
                 user_public_key: bitcoin::secp256k1::PublicKey::from_str(&request.user_public_key)?,
