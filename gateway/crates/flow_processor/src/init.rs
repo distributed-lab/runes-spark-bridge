@@ -5,7 +5,6 @@ use frost::aggregator::FrostAggregator;
 use std::sync::Arc;
 
 use gateway_local_db_store::storage::LocalDbStorage;
-use persistent_storage::init::PostgresRepo;
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 

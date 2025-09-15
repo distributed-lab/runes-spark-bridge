@@ -9,7 +9,7 @@ use tracing::instrument;
 pub async fn create_app(flow_sender: FlowSender) -> anyhow::Result<Router> {
     let state = AppState { flow_sender };
     Ok(Router::new()
-        .route("/api/user/runes-address", post(handlers::get_runes_address::handle))
+        .route("/api/user/runes-address", post(handlers::btc_addr_issuing::handle))
         .route("/api/user/bridge-runes", post(handlers::bridge_runes::handle))
         .route("/api/user/exit-spark", post(handlers::exit_spark::handle))
         .route(

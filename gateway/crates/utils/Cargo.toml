@@ -9,3 +9,8 @@ async-trait = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 frost-secp256k1-tr = { workspace = true }
+thiserror = { workspace = true }
+bitcoin = { workspace = true }
+tracing = { workspace = true }
+hex = { workspace = true }
+

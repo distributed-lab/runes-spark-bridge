@@ -5,6 +5,7 @@ edition = "2024"
 [dependencies]
 async-trait = { workspace = true }
 global_utils = { workspace = true }
+gateway_utils = { workspace = true }
 persistent_storage = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }

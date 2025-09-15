@@ -1,7 +1,7 @@
 use crate::storage::LocalDbStorage;
 use async_trait::async_trait;
 use frost::types::MusigId;
-use global_utils::tweak_generation::Nonce;
+use gateway_utils::tweak_generation::Nonce;
 use persistent_storage::error::DbError;
 use serde::{Deserialize, Serialize};
 use sqlx::Connection;
@@ -286,8 +286,8 @@ mod test_deposit_address_info {
     use bitcoin::secp256k1::PublicKey;
     use frost::traits::AggregatorMusigIdStorage;
     use frost::types::{AggregatorDkgState, AggregatorMusigIdData};
+    use gateway_utils::tweak_generation::TweakGenerator;
     use global_utils::logger::{LoggerGuard, init_logger};
-    use global_utils::tweak_generation::TweakGenerator;
     use persistent_storage::init::{PostgresPool, PostgresRepo};
     use std::str::FromStr;
     use std::sync::{Arc, LazyLock};

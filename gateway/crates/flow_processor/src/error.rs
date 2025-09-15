@@ -2,7 +2,7 @@ use crate::types::BtcAddrIssueRequest;
 use bitcoin::secp256k1;
 use frost::errors::AggregatorError;
 use gateway_local_db_store::schemas::deposit_address::DepositStatus;
-use global_utils::tweak_generation::TweakGeneratorError;
+use gateway_utils::tweak_generation::TweakGeneratorError;
 use persistent_storage::error::DbError;
 use thiserror::Error;
 

@@ -1,17 +1,13 @@
 use crate::error::{BtcAddrIssueErrorEnum, FlowProcessorError};
 use crate::flow_router::FlowProcessorRouter;
 use crate::types::BtcAddrIssueRequest;
-use bitcoin::key::{Keypair, TweakedPublicKey, UntweakedKeypair, UntweakedPublicKey};
-use bitcoin::secp256k1::scalar::OutOfRangeError;
-use bitcoin::secp256k1::{Parity, Scalar, Secp256k1};
-use bitcoin::{Address, Amount, KnownHrp, Network, PublicKey, secp256k1};
-use frost::traits::{AggregatorMusigIdStorage, AggregatorSignSessionStorage};
-use frost::types::{AggregatorDkgState, AggregatorMusigIdData, RuneId};
-use frost::utils::convert_public_key_package;
-use frost_secp256k1_tr::keys::PublicKeyPackage;
+use bitcoin::key::TweakedPublicKey;
+use bitcoin::secp256k1::Parity;
+use bitcoin::{Address, KnownHrp};
+use frost::traits::AggregatorMusigIdStorage;
+use frost::types::AggregatorDkgState;
 use gateway_local_db_store::schemas::deposit_address::{DepositAddrInfo, DepositAddressStorage, DepositStatus};
-use global_utils::tweak_generation::{Nonce, TweakGenerator};
-use persistent_storage::error::DbError;
+use gateway_utils::tweak_generation::{Nonce, TweakGenerator};
 use tracing::{debug, info, instrument};
 
 const LOG_PATH: &str = "flow_processor:routes:btc_addr_issuing";
@@ -134,7 +130,7 @@ mod tweak_signature_test {
     use frost::{aggregator::FrostAggregator, mocks::*};
     use frost_secp256k1_tr::Identifier;
     use frost_secp256k1_tr::keys::PublicKeyPackage;
-    use global_utils::tweak_generation::TweakGenerator;
+    use gateway_utils::tweak_generation::TweakGenerator;
     use lrc20::token_transaction::{
         TokenTransaction, TokenTransactionCreateInput, TokenTransactionInput, TokenTransactionVersion,
     };

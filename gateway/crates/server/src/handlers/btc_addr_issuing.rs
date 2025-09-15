@@ -8,14 +8,14 @@ use std::str::FromStr;
 use tracing::{debug, instrument};
 
 #[derive(Deserialize, Debug)]
-pub struct GetRunesAddressRequest {
+pub struct RunesAddressIssueRequest {
     pub user_public_key: String,
     pub rune_id: String,
     pub amount: u64,
 }
 
 #[derive(Serialize, Debug)]
-pub struct GetRunesAddressResponse {
+pub struct RunesAddressIssueResponse {
     pub address: String,
 }
 
@@ -23,8 +23,8 @@ pub struct GetRunesAddressResponse {
 #[instrument(level = "info", skip(state, request), fields(request = ?request), ret)]
 pub async fn handle(
     State(state): State<AppState>,
-    Json(request): Json<GetRunesAddressRequest>,
-) -> Result<Json<GetRunesAddressResponse>, GatewayError> {
+    Json(request): Json<RunesAddressIssueRequest>,
+) -> Result<Json<RunesAddressIssueResponse>, GatewayError> {
     _handle_inner(state, request)
         .await
         .map_err(|e| GatewayError::FlowProcessorError(format!("Failed to issue deposit address for bridging: {e}")))
@@ -33,8 +33,8 @@ pub async fn handle(
 #[instrument(level = "debug", skip(state, request), fields(request = ?request), ret)]
 async fn _handle_inner(
     state: AppState,
-    request: GetRunesAddressRequest,
-) -> anyhow::Result<Json<GetRunesAddressResponse>> {
+    request: RunesAddressIssueRequest,
+) -> anyhow::Result<Json<RunesAddressIssueResponse>> {
     debug!("[handler-btc-addr-issuing] Handling request: {request:?}");
     let possible_response = state
         .flow_sender
@@ -47,7 +47,7 @@ async fn _handle_inner(
         }))
         .await?;
     if let FlowProcessorResponse::IssueDepositAddress(flow_resp) = possible_response {
-        Ok(Json(GetRunesAddressResponse {
+        Ok(Json(RunesAddressIssueResponse {
             address: flow_resp.addr_to_replenish.to_string(),
         }))
     } else {

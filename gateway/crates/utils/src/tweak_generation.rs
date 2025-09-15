@@ -5,7 +5,6 @@ use bitcoin::secp256k1::{All, PublicKey};
 use bitcoin::{TapNodeHash, secp256k1};
 use frost_secp256k1_tr::VerifyingKey;
 use frost_secp256k1_tr::keys::{PublicKeyPackage, Tweak};
-use std::sync::LazyLock;
 use thiserror::Error;
 use tracing::{instrument, trace};
 

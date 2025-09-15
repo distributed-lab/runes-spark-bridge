@@ -1,9 +1,8 @@
 use crate::error::FlowProcessorError;
 use crate::types::*;
-use bitcoin::{KnownHrp, Network};
+use bitcoin::Network;
 use frost::aggregator::FrostAggregator;
 use gateway_local_db_store::storage::LocalDbStorage;
-use persistent_storage::init::PostgresRepo;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 use tracing;

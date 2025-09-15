@@ -4,7 +4,6 @@ use bitcoin::Network;
 use frost::aggregator::FrostAggregator;
 use gateway_local_db_store::storage::LocalDbStorage;
 use global_utils::common_types::get_uuid;
-use persistent_storage::init::PostgresRepo;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio;
